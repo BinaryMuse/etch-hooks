@@ -4,6 +4,8 @@ import etch from 'etch'
 
 import hooks from '../../src/index'
 
+// hook(etch)
+
 describe('onInitialize', () => {
   it('runs hooks when a component initializes', () => {
     const actions = []

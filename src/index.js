@@ -1,44 +1,51 @@
-import etch from 'etch'
+const hookedEtches = new WeakSet()
 
-const initializeHooks = new WeakMap()
-const updateHooks = new WeakMap()
-
-const _etchInitialize = etch.initialize.bind(etch)
-const _etchUpdate = etch.update.bind(etch)
-
-const generateHookedFunction = (hooks, originalFn, hookRunner) => {
-  return (target) => {
-    const hook = hooks.get(target)
-    const result = originalFn(target)
-    if (hook) hookRunner(hook, target, result)
-    return result
+export default function hookEtch (etch) {
+  // only hook each etch once
+  if (hookedEtches.has(etch)) {
+    return etch
   }
-}
 
-etch.initialize = generateHookedFunction(
-  initializeHooks,
-  _etchInitialize,
-  (hook, target) =>{
-    hook.call(target)
+  hookedEtches.add(etch)
+
+  const initializeHooks = new WeakMap()
+  const updateHooks = new WeakMap()
+
+  const _etchInitialize = etch.initialize.bind(etch)
+  const _etchUpdate = etch.update.bind(etch)
+
+  const generateHookedFunction = (hooks, originalFn, hookRunner) => {
+    return (target) => {
+      const hook = hooks.get(target)
+      const result = originalFn(target)
+      if (hook) hookRunner(hook, target, result)
+      return result
+    }
   }
-)
 
-etch.update = generateHookedFunction(
-  updateHooks,
-  _etchUpdate,
-  (hook, target, result) =>{
-    result.then(() => hook.call(target))
-  }
-)
+  etch.initialize = generateHookedFunction(
+    initializeHooks,
+    _etchInitialize,
+    (hook, target) =>{
+      hook.call(target)
+    }
+  )
 
-const hooks = {
-  onInitialize: function onInitialize (target, initializeHook) {
+  etch.update = generateHookedFunction(
+    updateHooks,
+    _etchUpdate,
+    (hook, target, result) =>{
+      result.then(() => hook.call(target))
+    }
+  )
+
+  export function onInitialize (target, initializeHook) {
     initializeHooks.set(target, initializeHook)
   },
 
-  onUpdate: function onUpdate (target, updateHook) {
+  export function onUpdate (target, updateHook) {
     updateHooks.set(target, updateHook)
   }
-}
 
-export default hooks
+  return etch
+}

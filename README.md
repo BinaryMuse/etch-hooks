@@ -2,6 +2,8 @@
 
 etch-hooks is a library to facilitate hooking into the [Etch](https://github.com/nathansobo/etch) component lifecycle.
 
+**NOTE**: This library is deprecated since Etch 0.6.0+ has built-in hook support.
+
 ### Overview
 
 It can be useful to hook into the Etch component lifecycle. etch-hooks allows you to hook into either (or both) of the `etch.initialize` and `etch.update` methods:
